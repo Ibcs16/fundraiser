@@ -1,12 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from .routers import users, projects
 from .database import engine, metadata
 
+
 metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = ['*']
 
@@ -21,6 +29,8 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(projects.router)
 
+templates = Jinja2Templates(directory='templates')
+
 # @app.on_event("startup")
 # async def startup():
 #     await database.connect()
@@ -29,9 +39,9 @@ app.include_router(projects.router)
 # async def shutdown():
 #     await database.disconnect()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.get("/dashboard", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "id": id})
 
 
 
